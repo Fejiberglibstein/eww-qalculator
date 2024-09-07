@@ -172,8 +172,12 @@ Token parse_token(char *tok) {
             break;
         }
     }
-    char *val = malloc(strlen(&(tok[i])));
-	strcpy(val, &(tok[i]));
+
+    char *val = NULL;
+    if (strlen(&(tok[i])) != 0) {
+        val = malloc(strlen(&(tok[i])));
+        strcpy(val, &(tok[i]));
+    }
 
     return (Token){.value = val, .ansi = seq};
 }
@@ -184,16 +188,16 @@ void parse_line(char *line, Equation *equation) {
         if (equation->valid) {
             print_equation(*equation);
             putchar('\n');
-			fflush(stdout);
+            fflush(stdout);
         }
 
         // Clean up the equation, freeing all the tokens in the
         // equation
         for (int i = 0; i < equation->lines.length; i++) {
-			Line tokens = equation->lines.items[i];
-			for (int j = 0; j < tokens.length; j ++) {
-				free(tokens.items[j].value);
-			}
+            Line tokens = equation->lines.items[i];
+            for (int j = 0; j < tokens.length; j++) {
+                free(tokens.items[j].value);
+            }
             vec_free(&tokens);
         }
         // Set length to 0 so we can override it later.
@@ -216,12 +220,12 @@ void parse_line(char *line, Equation *equation) {
     while (tok != NULL) {
         Token token = parse_token(tok);
 
-        // If the line has a warning, we should ignore this token.
-        if (strcmp(token.value, "warning: ") == 0) {
-            equation->valid = false;
-        }
-        if (strlen(token.value) != 0) {
+        if (token.value != NULL) {
             vec_append(&tokens, token);
+            // If the line has a warning, we should ignore this token.
+            if (strcmp(token.value, "warning: ") == 0) {
+                equation->valid = false;
+            }
         }
 
         tok = strtok(NULL, "\e\n");
