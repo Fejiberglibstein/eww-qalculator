@@ -99,12 +99,11 @@ void print_line(Line tokens) {
     for (int i = 0; i < tokens.length; i++) {
         Token token = tokens.items[i];
         char *token_class = get_token_class(token.ansi);
-        printf("{\"class\":\"%s\",\"value\":\"%s\"}", token_class,
-               token.value);
+        printf("{\"class\":\"%s\",\"value\":\"%s\"}", token_class, token.value);
         free(token_class);
-		if (i < tokens.length - 1) {
-			putchar(',');
-		}
+        if (i < tokens.length - 1) {
+            putchar(',');
+        }
     }
     printf("]");
 }
@@ -113,9 +112,9 @@ void print_equation(Equation equation) {
     printf("[");
     for (int i = 0; i < equation.lines.length; i++) {
         print_line(equation.lines.items[i]);
-		if (i < equation.lines.length - 1) {
-			putchar(',');
-		}
+        if (i < equation.lines.length - 1) {
+            putchar(',');
+        }
     }
     printf("]");
 }
@@ -128,15 +127,21 @@ void print_equation(Equation equation) {
 // This function will return `1` when the sequence is over, and `2` if there is
 // no sequence. In all other cases it will return `0`;
 int parse_ansi_seq(AnsiSeq *seq, char c) {
-    static AnsiColor current_color = WHITE;
+    static AnsiColor current_color = COLOR_RESET;
 
     switch (c) {
     case '[':
         return 0;
     case ';':
+        if (seq->reset_sequence == RESET && seq->part == 0) {
+            current_color = COLOR_RESET;
+        }
         seq->part++;
         return 0;
     case 'm':
+        if (seq->reset_sequence == RESET && seq->part == 0) {
+            current_color = COLOR_RESET;
+        }
         if (seq->color == 0) {
             seq->color = current_color;
         }
@@ -255,6 +260,11 @@ int open_qalc() {
     Equation equation = {.lines = {0}, .valid = true};
     for (;;) {
         fgets(result_buf, sizeof(result_buf), tail);
+
+        /*for (int i = 0; result_buf[i] != '\0'; i++) {*/
+        /*    printf("(%c)", result_buf[i]);*/
+        /*    fflush(NULL);*/
+        /*}*/
 
         parse_line(result_buf, &equation);
     }
