@@ -55,6 +55,7 @@ typedef struct {
 #define NUMBER ((RESET << 8) + CYAN)
 #define EXPRESSION ((RESET << 8) + COLOR_RESET)
 #define VARIABLE ((ITALIC << 8) + YELLOW)
+#define UNIT ((RESET << 8) + GREEN)
 
 #define QALC_HIST "/home/austint/.local/state/qalc_hist"
 #define EXPR_LEN 4096
@@ -85,6 +86,9 @@ char *get_token_class(AnsiSeq seq) {
         break;
     case VARIABLE:
         asprintf(&ret, "variable");
+        break;
+    case UNIT:
+        asprintf(&ret, "unit");
         break;
     default:
         asprintf(&ret, "%d;%d", seq.reset_sequence, seq.color);
