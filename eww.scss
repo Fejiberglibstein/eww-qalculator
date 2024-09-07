@@ -2,5 +2,41 @@
   background: rgb(0,0,0,0);
   all: unset;
   font-family: "Space Grotesk", "Font Awesome 6 Free";
+  font-size: 16px;
+}
+
+.calc_box {
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.calc_input {
+  background-color: #2e2e2e;
+  border-radius: 7px;
+  padding: 8px;
+  font-size: 24px;
+}
+
+.calc_input .icon {
+  color: #888888;
+}
+
+.math.number {
+  color: cyan;
+}
+
+.math.expression {
+  color: white;
+}
+
+.math.unit {
+  color: lime;
+}
+
+
+.math.variable {
+  color: yellow;
+  font-style: italic;
 }
 

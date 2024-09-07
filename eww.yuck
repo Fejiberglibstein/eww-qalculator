@@ -1,5 +1,5 @@
 (defvar history "~/.local/state/qalc_hist")
-(deflisten result :initial `[[], [{"class":"red", "value":"hi"}], []]` `./calc/scripts/qalc open`)
+(deflisten result :initial `[]` `./calc/scripts/qalc open`)
 (defvar set_equation "./calc/scripts/qalc expr '{}'")
 
 (defwidget expression []
@@ -16,25 +16,40 @@
            :space-evenly false
            (for token in line
                 (label 
+                  :hexpand true
                   :truncate false
                   :unindent false
-                  :class {token.class}
+                  :class "math ${token.class}"
                   :text {token.value}))))))
 
 (defwidget calc_box []
   (box
     :orientation "vertical"
     :valign "start"
-    :style "background-color: grey"
-    (input
-      :onaccept "${EWW_CMD} close calc"
-      :onchange set_equation)
+    :class "calc_box"
+
+    :spacing 0
+    :space-evenly false
+    (box 
+      :spacing 8
+      :space-evenly false
+
+      :width 500
+      :class "calc_input"
+      :halign "center"
+      (label :class "icon" :text "")
+      (input
+        :active true
+
+        :onaccept "${EWW_CMD} close calc"
+        :onchange set_equation))
+
+
     (expression)))
 
 (defwindow calc
   :monitor 0
   :geometry (geometry
-              :width "300px"
               :anchor "center center")
   :stacking "fg"
   :exclusive false
