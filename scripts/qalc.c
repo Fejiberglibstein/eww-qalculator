@@ -6,9 +6,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-int open_qalc();
-int qalc_send(char *);
-
 typedef enum : uint8_t {
     RESET = 0,
     BOLD,
@@ -64,6 +61,14 @@ typedef struct {
 #define QALC_HIST "/home/austint/.local/state/qalc_hist"
 #define EXPR_LEN 4096
 
+int qalc_send(char *expr);
+int open_qalc();
+void print_line(Line tokens);
+void print_equation(Equation equation);
+int parse_ansi_seq(AnsiSeq *seq, char c);
+Token parse_token(char *tok);
+void parse_line(char *line, Equation *equation);
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "No arguments\n");
@@ -75,6 +80,52 @@ int main(int argc, char **argv) {
         return qalc_send(argv[2]);
     }
     return 1;
+}
+
+int qalc_send(char *expr) {
+    FILE *qalc = fopen(QALC_HIST, "a");
+    if (qalc == NULL) {
+        fprintf(stderr, "Could not open qalc history file\n");
+        return 1;
+    }
+
+    fprintf(qalc, "%s\n\n", expr);
+    fclose(qalc);
+
+    return 0;
+}
+
+int open_qalc() {
+    char result_buf[EXPR_LEN];
+    // Make qalc history file
+    FILE *qalc = fopen(QALC_HIST, "w");
+    if (qalc == NULL) {
+        fprintf(stderr, "Could not make qalc history file\n");
+        return 1;
+    }
+    fclose(qalc);
+
+    // Read the last line of qalc_hist
+    FILE *tail = popen("tail -F " QALC_HIST " | qalc --terse", "r");
+    if (tail == NULL) {
+        fprintf(stderr, "Could not tail qalc history\n");
+        return 1;
+    }
+
+    char *lines;
+
+    Equation equation = {.lines = {0}, .valid = true};
+    for (;;) {
+        fgets(result_buf, sizeof(result_buf), tail);
+
+        /*for (int i = 0; result_buf[i] != '\0'; i++) {*/
+        /*    printf("(%c)", result_buf[i]);*/
+        /*    fflush(NULL);*/
+        /*}*/
+
+        parse_line(result_buf, &equation);
+    }
+    return 0;
 }
 
 char *get_token_class(AnsiSeq seq) {
@@ -142,81 +193,6 @@ void print_equation(Equation equation) {
     printf("]");
 }
 
-// Parse a character into an AnsiSeq.
-//
-// This function will be called for each character in a token until 'm' is
-// reached, indicating the end of the sequence.
-//
-// This function will return `1` when the sequence is over, and `2` if there is
-// no sequence. In all other cases it will return `0`;
-int parse_ansi_seq(AnsiSeq *seq, char c) {
-    static AnsiColor current_color = COLOR_RESET;
-
-    switch (c) {
-    case '[':
-        return 0;
-    case ';':
-        if (seq->reset_sequence == RESET && seq->part == 0) {
-            current_color = COLOR_RESET;
-        }
-        seq->part++;
-        return 0;
-    case 'm':
-        if (seq->reset_sequence == RESET && seq->part == 0) {
-            current_color = COLOR_RESET;
-        }
-        if (seq->color == 0) {
-            seq->color = current_color;
-        }
-        return 1;
-    }
-
-    if (c <= '9' && c >= '0') {
-        uint8_t p = ((uint8_t *)seq)[seq->part];
-        p *= 10;
-        p += c - '0';
-        ((uint8_t *)seq)[seq->part] = p;
-        // If we're currently parsing the color
-        if (seq->part == 1) {
-            current_color = p;
-        }
-
-        return 0;
-    }
-
-    // If nothing else matches, there is no ansi sequence.
-    return 2;
-}
-
-Token parse_token(char *tok) {
-    AnsiSeq seq = {0};
-    int i;
-    for (i = 0; tok[i] != '\0'; i++) {
-        int parse = parse_ansi_seq(&seq, tok[i]);
-        if (parse == 1) {
-            i++;
-            break;
-        } else if (parse == 2) {
-            break;
-        }
-    }
-
-    char *val = NULL;
-    int len = strlen(&(tok[i]));
-    if (len != 0) {
-        val = calloc(len + 1, sizeof(char));
-        strcpy(val, &(tok[i]));
-    }
-
-    // Replace all double quotes with single quotes
-    for (int i = 0; i < len; i++) {
-        if (val[i] == '"') {
-            val[i] = '\'';
-        }
-    }
-    return (Token){.value = val, .ansi = seq};
-}
-
 void parse_line(char *line, Equation *equation) {
     // If we reach this, then the equation is done
     if (strncmp(line, "> \n", 4) == 0) {
@@ -274,48 +250,77 @@ void parse_line(char *line, Equation *equation) {
     vec_append(&(equation->lines), tokens);
 }
 
-int open_qalc() {
-    char result_buf[EXPR_LEN];
-    // Make qalc history file
-    FILE *qalc = fopen(QALC_HIST, "w");
-    if (qalc == NULL) {
-        fprintf(stderr, "Could not make qalc history file\n");
-        return 1;
-    }
-    fclose(qalc);
-
-    // Read the last line of qalc_hist
-    FILE *tail = popen("tail -F " QALC_HIST " | qalc --terse", "r");
-    if (tail == NULL) {
-        fprintf(stderr, "Could not tail qalc history\n");
-        return 1;
+Token parse_token(char *tok) {
+    AnsiSeq seq = {0};
+    int i;
+    for (i = 0; tok[i] != '\0'; i++) {
+        int parse = parse_ansi_seq(&seq, tok[i]);
+        if (parse == 1) {
+            i++;
+            break;
+        } else if (parse == 2) {
+            break;
+        }
     }
 
-    char *lines;
-
-    Equation equation = {.lines = {0}, .valid = true};
-    for (;;) {
-        fgets(result_buf, sizeof(result_buf), tail);
-
-        /*for (int i = 0; result_buf[i] != '\0'; i++) {*/
-        /*    printf("(%c)", result_buf[i]);*/
-        /*    fflush(NULL);*/
-        /*}*/
-
-        parse_line(result_buf, &equation);
+    char *val = NULL;
+    int len = strlen(&(tok[i]));
+    if (len != 0) {
+        val = calloc(len + 1, sizeof(char));
+        strcpy(val, &(tok[i]));
     }
-    return 0;
+
+    // Replace all double quotes with single quotes
+    for (int i = 0; i < len; i++) {
+        if (val[i] == '"') {
+            val[i] = '\'';
+        }
+    }
+    return (Token){.value = val, .ansi = seq};
 }
 
-int qalc_send(char *expr) {
-    FILE *qalc = fopen(QALC_HIST, "a");
-    if (qalc == NULL) {
-        fprintf(stderr, "Could not open qalc history file\n");
+// Parse a character into an AnsiSeq.
+//
+// This function will be called for each character in a token until 'm' is
+// reached, indicating the end of the sequence.
+//
+// This function will return `1` when the sequence is over, and `2` if there is
+// no sequence. In all other cases it will return `0`;
+int parse_ansi_seq(AnsiSeq *seq, char c) {
+    static AnsiColor current_color = COLOR_RESET;
+
+    switch (c) {
+    case '[':
+        return 0;
+    case ';':
+        if (seq->reset_sequence == RESET && seq->part == 0) {
+            current_color = COLOR_RESET;
+        }
+        seq->part++;
+        return 0;
+    case 'm':
+        if (seq->reset_sequence == RESET && seq->part == 0) {
+            current_color = COLOR_RESET;
+        }
+        if (seq->color == 0) {
+            seq->color = current_color;
+        }
         return 1;
     }
 
-    fprintf(qalc, "%s\n\n", expr);
-    fclose(qalc);
+    if (c <= '9' && c >= '0') {
+        uint8_t p = ((uint8_t *)seq)[seq->part];
+        p *= 10;
+        p += c - '0';
+        ((uint8_t *)seq)[seq->part] = p;
+        // If we're currently parsing the color
+        if (seq->part == 1) {
+            current_color = p;
+        }
 
-    return 0;
+        return 0;
+    }
+
+    // If nothing else matches, there is no ansi sequence.
+    return 2;
 }
