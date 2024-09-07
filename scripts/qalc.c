@@ -244,9 +244,15 @@ void parse_line(char *line, Equation *equation) {
         return;
     }
 
-    // Remove the indentation at the beginning of a line
-    while (line[0] == ' ') {
-        line = &(line[1]);
+    // If the line has indentation, replace the indentation with a empty ansi
+    // code. This fixes some issues if the first character is part of an ansi
+    // sequence
+    for (int i = 0; line[i] == ' '; i ++) {
+        if (i == 0) {
+            line[i] = '[';
+        } else {
+            line[i] = 'm';
+        }
     }
 
     char *tok = strtok(line, "\e\n");
@@ -259,7 +265,7 @@ void parse_line(char *line, Equation *equation) {
             vec_append(&tokens, token);
             // If the line has a warning, we should ignore this token.
             if (strcmp(token.value, "warning: ") == 0) {
-                equation->valid = false;
+                /*equation->valid = false;*/
             }
         }
 
@@ -279,7 +285,7 @@ int open_qalc() {
     fclose(qalc);
 
     // Read the last line of qalc_hist
-    FILE *tail = popen("tail -F " QALC_HIST " | qalc", "r");
+    FILE *tail = popen("tail -F " QALC_HIST " | qalc --terse", "r");
     if (tail == NULL) {
         fprintf(stderr, "Could not tail qalc history\n");
         return 1;
