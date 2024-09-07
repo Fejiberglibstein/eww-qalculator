@@ -205,6 +205,11 @@ void parse_line(char *line, Equation *equation) {
         return;
     }
 
+    // Remove the indentation at the beginning of a line
+    while (line[0] == ' ') {
+        line = &(line[1]);
+    }
+
     char *tok = strtok(line, "\e\n");
     Line tokens = {0};
 
