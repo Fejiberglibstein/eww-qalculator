@@ -113,10 +113,16 @@ void print_line(Line tokens) {
 }
 
 void print_equation(Equation equation) {
+    if (equation.lines.length <= 2) {
+        printf("[]");
+        return;
+    }
+
     printf("[");
-    for (int i = 0; i < equation.lines.length; i++) {
+    // We want to skip the first and last lines since they're empty
+    for (int i = 1; i < equation.lines.length - 1; i++) {
         print_line(equation.lines.items[i]);
-        if (i < equation.lines.length - 1) {
+        if (i < equation.lines.length - 2) {
             putchar(',');
         }
     }
