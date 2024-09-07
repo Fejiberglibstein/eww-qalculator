@@ -52,10 +52,14 @@ typedef struct {
     bool valid;
 } Equation;
 
+// List of all colors qalc uses and what they represent
 #define NUMBER ((RESET << 8) + CYAN)
 #define EXPRESSION ((RESET << 8) + COLOR_RESET)
 #define VARIABLE ((ITALIC << 8) + YELLOW)
 #define UNIT ((RESET << 8) + GREEN)
+#define ERROR ((RESET << 8) + RED)
+#define ERROR_MSG ((ITALIC << 8) + COLOR_RESET)
+#define BOOLEAN ((RESET << 8) + YELLOW)
 
 #define QALC_HIST "/home/austint/.local/state/qalc_hist"
 #define EXPR_LEN 4096
@@ -90,8 +94,17 @@ char *get_token_class(AnsiSeq seq) {
     case UNIT:
         asprintf(&ret, "unit");
         break;
+    case ERROR:
+        asprintf(&ret, "error");
+        break;
+    case ERROR_MSG:
+        asprintf(&ret, "error-msg");
+        break;
+    case BOOLEAN:
+        asprintf(&ret, "boolean");
+        break;
     default:
-        asprintf(&ret, "%d;%d", seq.reset_sequence, seq.color);
+        asprintf(&ret, "unknown %d;%d", seq.reset_sequence, seq.color);
         break;
     }
     return ret;

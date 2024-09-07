@@ -18,6 +18,10 @@
   font-size: 24px;
 }
 
+.calc_input selection {
+  background-color: rgba(#705cad, 0.6);
+}
+
 .calc_input .icon {
   color: #888888;
 }
@@ -34,9 +38,25 @@
   color: lime;
 }
 
-
 .math.variable {
   color: yellow;
   font-style: italic;
 }
 
+.math.error {
+  color: lighter(red);
+  font-weight: 900;
+}
+
+.math.error-message {
+  font-style: italic;
+}
+
+.math.boolean {
+  color: yellow;
+}
+
+.math.unknown {
+  color: lighter(red);
+  background-color: darker(red);
+}
