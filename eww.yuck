@@ -6,12 +6,18 @@
   (box
     :orientation "vertical"
     :valign "start"
-    :height 100
+    :vexpand true
     (for line in result
          (box
            :orientation "horizontal"
+           :halign "center"
+           :gap 0
+           :hexpand false
+           :space-evenly false
            (for token in line
                 (label 
+                  :truncate false
+                  :unindent false
                   :class {token.class}
                   :text {token.value}))))))
 
