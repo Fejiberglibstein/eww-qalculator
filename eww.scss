@@ -1,8 +1,11 @@
+* {
+  all: unset;
+}
+
 .calc {
   background: rgb(0,0,0,0);
-  all: unset;
   font-family: "Space Grotesk", "Font Awesome 6 Free";
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .calc_box {

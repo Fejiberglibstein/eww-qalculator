@@ -1,6 +1,6 @@
 (defvar history "~/.local/state/qalc_hist")
-(deflisten result :initial `[]` `./calc/scripts/qalc open`)
-(defvar set_equation "./calc/scripts/qalc expr '{}'")
+(deflisten result :initial `[]` `./scripts/qalc open`)
+(defvar set_equation "./scripts/qalc expr '{}'")
 
 (defwidget expression []
   (box
@@ -27,22 +27,22 @@
     :orientation "vertical"
     :valign "start"
     :class "calc_box"
+    :height 400
 
-    :spacing 0
+    :spacing 10
     :space-evenly false
     (box 
       :spacing 8
       :space-evenly false
 
-      :width 500
       :class "calc_input"
       :halign "center"
       (label :class "icon" :text "")
       (input
-        :active true
-
-        :onaccept "${EWW_CMD} close calc"
-        :onchange set_equation))
+       :active true
+       :width 500
+       :onaccept "${EWW_CMD} close calc"
+       :onchange set_equation))
 
 
     (expression)))
@@ -51,7 +51,7 @@
   :monitor 0
   :geometry (geometry
               :anchor "center center")
-  :stacking "fg"
-  :exclusive false
   :focusable true
+  :stacking "fg"
+  :onlostfocus "${EWW_CMD} --config ${EWW_CONFIG_DIR} close calc"
   (calc_box))
