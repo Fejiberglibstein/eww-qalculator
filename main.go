@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 )
 
 func main() {
@@ -31,41 +32,13 @@ func main() {
 }
 
 func start() {
-	if err := os.Remove(Port); err != nil {
-		log.Print(err)
-	}
+	runServer(func(message Message) error {
+		switch message.Request {
+		case Expr:
 
-	server, err := net.Listen("unix", Port)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer server.Close()
-
-	for {
-		conn, err := server.Accept()
-		if err != nil {
-			log.Print("Failed to accept request: ", err)
-			continue
 		}
-
-		// Read the header
-		// buf := make([]byte, calc.HeaderLength)
-		// if _, err = client.Read(buf); err != nil {
-		// 	log.Panic(err)
-		// }
-
-		// Parse header
-
-		dec := gob.NewDecoder(conn)
-		var message Message
-		dec.Decode(&message)
-
-		fmt.Print("Req: ", message.Request, "\nData: ", string(message.Data))
-
-		if err = conn.Close(); err != nil {
-			log.Print(err)
-		}
-	}
+		return nil
+	})
 }
 
 func send(args []string) {
@@ -107,5 +80,38 @@ func getMessage(args []string) (Message, error) {
 		return Message{Data: data, Request: Expr}, nil
 	default:
 		return Message{}, errors.New("Invalid request")
+	}
+}
+
+func runServer(onRequest func(Message) error) {
+	if err := os.Remove(Port); err != nil {
+		log.Print(err)
+	}
+
+	server, err := net.Listen("unix", Port)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer server.Close()
+
+	for {
+		conn, err := server.Accept()
+		if err != nil {
+			log.Print("Failed to accept request: ", err)
+			continue
+		}
+
+		// Parse the data
+		dec := gob.NewDecoder(conn)
+		var message Message
+		dec.Decode(&message)
+
+		if err = onRequest(message); err != nil {
+			log.Print(err)
+		}
+
+		if err = conn.Close(); err != nil {
+			log.Print(err)
+		}
 	}
 }
