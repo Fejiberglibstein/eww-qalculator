@@ -1,20 +1,28 @@
 package main
 
 import (
+	"bytes"
 	"encoding/gob"
+	"errors"
+	"fmt"
 	"log"
+	"net"
 	"os"
 )
 
 func main() {
 	args := os.Args
 
+	if len(args) < 2 {
+		log.Fatal("Not enough args")
+	}
+
 	switch args[1] {
 	case "start":
 		start()
 		break
 	case "send":
-		send()
+		send(args[2:])
 		break
 	default:
 		log.Print("Invalid arguments")
@@ -60,20 +68,19 @@ func start() {
 	}
 }
 
-func send() {
-
-	if len(args) < 3 {
-		log.Fatal("Not enough args")
+func send(args []string) {
+	if len(args) < 2 {
+		log.Fatal("Not enough args for send request")
 	}
 
-	conn, err := net.Dial("unix", calc.Port)
+	conn, err := net.Dial("unix", Port)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 
 	// Get the message to send based on args
-	message, err := get_message(args[1:])
+	message, err := getMessage(args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,12 +100,12 @@ func send() {
 
 }
 
-func get_message(args []string) (calc.Message, error) {
+func getMessage(args []string) (Message, error) {
 	data := []byte(args[1])
 	switch args[0] {
 	case "expr":
-		return calc.Message{Data: data, Request: calc.Expr}, nil
+		return Message{Data: data, Request: Expr}, nil
 	default:
-		return calc.Message{}, errors.New("Invalid request")
+		return Message{}, errors.New("Invalid request")
 	}
 }
