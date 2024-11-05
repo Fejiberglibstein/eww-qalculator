@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"go/scanner"
 	"io"
 	"log"
 	"net"
@@ -34,46 +33,48 @@ func main() {
 
 }
 
-type CalcProcess struct {
-}
-
 func start() {
-	qalc := exec.Command("qalc", "-terse")
+	qalc := exec.Command("qalc")
 
-	stdin, err := qalc.StdinPipe()
+	stdinPipe, err := qalc.StdinPipe()
 	if err != nil {
 		log.Panic(err)
 	}
-	defer stdin.Close()
+	defer stdinPipe.Close()
 
-	stdout, err := qalc.StdoutPipe()
+	stdoutPipe, err := qalc.StdoutPipe()
 	if err != nil {
 		log.Panic(err)
 	}
-	defer stdout.Close()
-	reader := bufio.NewReader(stdout)
+	stdout := bufio.NewReader(stdoutPipe)
+	defer stdoutPipe.Close()
 
 	if err = qalc.Start(); err != nil {
 		log.Panic(err)
 	}
+	defer qalc.Process.Kill()
 
 	runServer(func(message Message) error {
 		switch message.Request {
 		case Expr:
-			io.WriteString(stdin, string(message.Data))
+			io.WriteString(stdinPipe, string(message.Data)+"\n")
 			// Read the first line from qalc, this is always an empty line
-			if _, err = reader.ReadString('\n'); err != nil {
+			// if _, err = reader.ReadString('\n'); err != nil {
+			// 	log.Print("Could not read from qalc")
+			// 	return err
+			// }
+
+			// var total string
+			var res string
+			// Concatenate all the strings together
+			res, err = stdout.ReadString('\n')
+			if err != nil {
 				log.Print("Could not read from qalc")
 				return err
 			}
-			var res string
-			for res != "\n" {
-				res, err = reader.ReadString('\n')
-				if err != nil {
-					log.Print("Could not read from qalc")
-					return err
-				}
-			}
+			fmt.Print(string(res))
+		default:
+			return errors.New("Invalid request received")
 		}
 		return nil
 	})
