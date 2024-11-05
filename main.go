@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"go/scanner"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -31,11 +34,46 @@ func main() {
 
 }
 
+type CalcProcess struct {
+}
+
 func start() {
+	qalc := exec.Command("qalc", "-terse")
+
+	stdin, err := qalc.StdinPipe()
+	if err != nil {
+		log.Panic(err)
+	}
+	defer stdin.Close()
+
+	stdout, err := qalc.StdoutPipe()
+	if err != nil {
+		log.Panic(err)
+	}
+	defer stdout.Close()
+	reader := bufio.NewReader(stdout)
+
+	if err = qalc.Start(); err != nil {
+		log.Panic(err)
+	}
+
 	runServer(func(message Message) error {
 		switch message.Request {
 		case Expr:
-
+			io.WriteString(stdin, string(message.Data))
+			// Read the first line from qalc, this is always an empty line
+			if _, err = reader.ReadString('\n'); err != nil {
+				log.Print("Could not read from qalc")
+				return err
+			}
+			var res string
+			for res != "\n" {
+				res, err = reader.ReadString('\n')
+				if err != nil {
+					log.Print("Could not read from qalc")
+					return err
+				}
+			}
 		}
 		return nil
 	})
