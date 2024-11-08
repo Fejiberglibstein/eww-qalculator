@@ -58,21 +58,33 @@ func start() {
 		switch message.Request {
 		case Expr:
 			io.WriteString(stdinPipe, string(message.Data)+"\n")
-			// Read the first line from qalc, this is always an empty line
-			// if _, err = reader.ReadString('\n'); err != nil {
-			// 	log.Print("Could not read from qalc")
-			// 	return err
-			// }
 
-			// var total string
-			var res string
-			// Concatenate all the strings together
-			res, err = stdout.ReadString('\n')
-			if err != nil {
+			// Read the first line from qalc, this will always be
+			//
+			// > (whatever expression was inputted)
+			//
+			// So we can safely ignore it
+			if _, err = stdout.ReadString('\n'); err != nil {
 				log.Print("Could not read from qalc")
 				return err
 			}
-			fmt.Print(string(res))
+
+			// var total string
+			var res string = " "
+			var total string
+			for {
+				// Concatenate all the strings together
+				res, err = stdout.ReadString('\n')
+				if err != nil {
+					log.Print("Could not read from qalc")
+					return err
+				}
+				if res[0] == '>' {
+					break
+				}
+				total += res
+			}
+			fmt.Print(total)
 		default:
 			return errors.New("Invalid request received")
 		}
@@ -113,10 +125,9 @@ func send(args []string) {
 }
 
 func getMessage(args []string) (Message, error) {
-	data := []byte(args[1])
 	switch args[0] {
 	case "expr":
-		return Message{Data: data, Request: Expr}, nil
+		return Message{Data: []byte(args[1] + "\n"), Request: Expr}, nil
 	default:
 		return Message{}, errors.New("Invalid request")
 	}
