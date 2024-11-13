@@ -12,7 +12,7 @@ type Message struct {
 type ListenerPort string
 
 const (
-	ExprResult ListenerPort = "expr_result"
+	ExprResultPort ListenerPort = "expr_result"
 )
 
 const (

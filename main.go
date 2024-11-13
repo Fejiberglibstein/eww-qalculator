@@ -11,6 +11,8 @@ import (
 	"net"
 	"os"
 	"os/exec"
+
+	"github.com/Fejiberglibstein/eww-qalculator/message"
 )
 
 func main() {
@@ -54,10 +56,10 @@ func start() {
 	}
 	defer qalc.Process.Kill()
 
-	runServer(func(message Message) error {
-		switch message.Request {
-		case Expr:
-			io.WriteString(stdinPipe, string(message.Data)+"\n")
+	runServer(func(msg message.Message) error {
+		switch msg.Header {
+		case uint8(message.SendExpr):
+			io.WriteString(stdinPipe, string(msg.Data)+"\n")
 
 			// Read the first line from qalc, this will always be
 			//
@@ -134,34 +136,4 @@ func getMessage(args []string) (Message, error) {
 }
 
 func runServer(onRequest func(Message) error) {
-	if err := os.Remove(Port); err != nil {
-		log.Print(err)
-	}
-
-	server, err := net.Listen("unix", Port)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer server.Close()
-
-	for {
-		conn, err := server.Accept()
-		if err != nil {
-			log.Print("Failed to accept request: ", err)
-			continue
-		}
-
-		// Parse the data
-		dec := gob.NewDecoder(conn)
-		var message Message
-		dec.Decode(&message)
-
-		if err = onRequest(message); err != nil {
-			log.Print(err)
-		}
-
-		if err = conn.Close(); err != nil {
-			log.Print(err)
-		}
-	}
 }
