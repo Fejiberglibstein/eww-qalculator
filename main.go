@@ -1,15 +1,9 @@
 package main
 
 import (
-	"bufio"
-	"errors"
-	"fmt"
-	"io"
 	"log"
 	"os"
-	"os/exec"
 
-	"github.com/Fejiberglibstein/eww-qalculator/message"
 	"github.com/Fejiberglibstein/eww-qalculator/send"
 	"github.com/Fejiberglibstein/eww-qalculator/server"
 )
@@ -36,30 +30,4 @@ func main() {
 		log.Print("Invalid arguments")
 	}
 
-}
-
-func start() {
-	qalc := exec.Command("qalc")
-
-	stdinPipe, err := qalc.StdinPipe()
-	if err != nil {
-		log.Panic(err)
-	}
-	defer stdinPipe.Close()
-
-	stdoutPipe, err := qalc.StdoutPipe()
-	if err != nil {
-		log.Panic(err)
-	}
-	stdout := bufio.NewReader(stdoutPipe)
-	defer stdoutPipe.Close()
-
-	if err = qalc.Start(); err != nil {
-		log.Panic(err)
-	}
-	defer qalc.Process.Kill()
-
-}
-
-func runServer(onRequest func(Message) error) {
 }

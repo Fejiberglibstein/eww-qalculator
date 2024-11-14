@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bufio"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -17,12 +18,14 @@ const Port = "/tmp/eww-calc"
 
 type Server struct {
 	listener net.Listener
+	qalc     Qalc
 }
 
 type Qalc struct {
-	cmd    *exec.Cmd
-	stdout io.ReadCloser
-	stdin  io.WriteCloser
+	cmd        *exec.Cmd
+	stdout     *bufio.Reader
+	stdin      io.WriteCloser
+	stdoutPipe io.ReadCloser
 }
 
 func NewServer(args []string) (Server, error) {
@@ -58,10 +61,13 @@ func runQalc() (Qalc, error) {
 		return Qalc{}, err
 	}
 
+	stdout := bufio.NewReader(stdoutPipe)
+
 	return Qalc{
-		cmd:    qalc,
-		stdout: stdoutPipe,
-		stdin:  stdinPipe,
+		cmd:        qalc,
+		stdout:     stdout,
+		stdin:      stdinPipe,
+		stdoutPipe: stdoutPipe,
 	}, nil
 }
 
@@ -72,7 +78,9 @@ func (s *Server) Run() {
 	if err != nil {
 		log.Panic(err)
 	}
-	defer qalc.stdout.Close()
+
+	s.qalc = qalc
+	defer qalc.stdoutPipe.Close()
 	defer qalc.stdin.Close()
 
 	s.listen()
@@ -104,24 +112,23 @@ func (s *Server) listen() {
 func (s *Server) onRequest(msg message.Message) error {
 	switch msg.Header {
 	case uint8(message.SendExpr):
-		io.WriteString(stdinPipe, string(msg.Data)+"\n")
+		io.WriteString(s.qalc.stdin, string(msg.Data)+"\n")
 
 		// Read the first line from qalc, this will always be
 		//
 		// > (whatever expression was inputted)
 		//
 		// So we can safely ignore it
-		if _, err = stdout.ReadString('\n'); err != nil {
+		if _, err := s.qalc.stdout.ReadString('\n'); err != nil {
 			log.Print("Could not read from qalc")
 			return err
 		}
 
 		// var total string
-		var res string = " "
 		var total string
 		for {
 			// Concatenate all the strings together
-			res, err = stdout.ReadString('\n')
+			res, err := s.qalc.stdout.ReadString('\n')
 			if err != nil {
 				log.Print("Could not read from qalc")
 				return err
@@ -135,6 +142,5 @@ func (s *Server) onRequest(msg message.Message) error {
 	default:
 		return errors.New("Invalid request received")
 	}
-	return nil
 	return nil
 }
