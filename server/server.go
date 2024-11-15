@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/gob"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -78,8 +77,8 @@ func (s *Server) Run() {
 	if err != nil {
 		log.Panic(err)
 	}
-
 	s.qalc = qalc
+
 	defer qalc.stdoutPipe.Close()
 	defer qalc.stdin.Close()
 
@@ -125,7 +124,7 @@ func (s *Server) onRequest(msg message.Message) error {
 		}
 
 		// var total string
-		var total string
+		qalcStrings := make([]string, 0)
 		for {
 			// Concatenate all the strings together
 			res, err := s.qalc.stdout.ReadString('\n')
@@ -136,9 +135,12 @@ func (s *Server) onRequest(msg message.Message) error {
 			if res[0] == '>' {
 				break
 			}
-			total += res
+
+			if res != "\n" {
+				qalcStrings = append(qalcStrings, res)
+
+			}
 		}
-		fmt.Print(total)
 	default:
 		return errors.New("Invalid request received")
 	}
