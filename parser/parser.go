@@ -1,14 +1,8 @@
 package parser
 
 import (
-	"errors"
+	"log"
 	"strings"
-)
-
-type Class string
-
-const (
-	Number Class = "number"
 )
 
 type Token struct {
@@ -16,31 +10,21 @@ type Token struct {
 	Class Class  `json:"class"`
 }
 
-type AnsiSeq struct {
-
-}
-
 // Gets the tokens out from a qalc expression
 func ParseTokens(input string) {
-
 	split := strings.Split(input, "\x1B")
 
+	tokens := make([]Token, 0)
+
 	for _, tok := range split {
-		parseAnsiSeq(tok)
-	}
-
-}
-
-func parseAnsiSeq(tok string) (Class, int, error) {
-	// Skip the first token
-	for tok[0] != '[' {
-		if len(tok) > 1 {
-			tok = tok[1:]
-		} else {
-			return "", 0, errors.New("Ansi seq not found in string segment")
+		class, offset, err := parseAnsiSeq(tok)
+		if err != nil {
+			log.Panic("Error parsing ansi seq: ", err)
 		}
+		tokens = append(tokens, Token{
+			Value: tok[offset:],
+			Class: class,
+		})
 	}
-	for i, char := range tok {
 
-	}
 }
