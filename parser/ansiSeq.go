@@ -2,7 +2,9 @@ package parser
 
 import (
 	"errors"
+	"log"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -73,17 +75,17 @@ func (seq *ansiSeq) getClass() Class {
 //
 // Will return the class, offset of the string to skip over the ansi sequence,
 // or any error
-func parseAnsiSeq(tok string) (Class, int, error) {
+func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 	// Skip the first token
 	for tok[0] != '[' {
 		if len(tok) > 1 {
 			tok = tok[1:]
 		} else {
-			return "", 0, errors.New("Ansi seq not found in string segment")
+			return ansiSeq{}, 0, errors.New("Ansi seq not found in string segment")
 		}
 	}
 	part := 0
-	num := make([]rune, 0)
+	var num strings.Builder
 	var seq ansiSeq
 	var seqLength int
 
@@ -94,27 +96,37 @@ func parseAnsiSeq(tok string) (Class, int, error) {
 			continue
 		case 'm':
 			// 'm' is the ending character in an ansi seq
-			seqLength = i
+			seqLength = i + 1
 			break
 		case ';':
-			seq.addPart(string(num), part)
+			if err := seq.addPart(num.String(), part); err != nil {
+				return ansiSeq{}, 0, err
+			}
 			part += 1
 			continue
 		}
 		if unicode.IsDigit(char) {
-			num = append(num, char)
+			num.WriteRune(char)
+			log.Print(num.String())
 		}
 	}
-	return seq.getClass(), seqLength, nil
+	return seq, seqLength, nil
 }
 
-func (seq *ansiSeq) addPart(num string, part int) {
+func (seq *ansiSeq) addPart(num string, part int) error {
 
-	digit, _ := strconv.Atoi(num)
+	digit, err := strconv.Atoi(num)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	log.Print("HERE", num, digit)
 
 	if part == 0 {
 		seq.graphics = ansiGraphic(digit)
 	} else {
 		seq.color = ansiColor(digit)
 	}
+
+	return nil
 }

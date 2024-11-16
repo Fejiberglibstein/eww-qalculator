@@ -3,7 +3,9 @@ package server
 import (
 	"bufio"
 	"encoding/gob"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -11,6 +13,7 @@ import (
 	"os/exec"
 
 	"github.com/Fejiberglibstein/eww-qalculator/message"
+	"github.com/Fejiberglibstein/eww-qalculator/parser"
 )
 
 const Port = "/tmp/eww-calc"
@@ -138,9 +141,16 @@ func (s *Server) onRequest(msg message.Message) error {
 
 			if res != "\n" {
 				qalcStrings = append(qalcStrings, res)
-
 			}
 		}
+
+		lines := parser.ParseLines(qalcStrings)
+		str, err := json.Marshal(&lines)
+		if err != nil {
+			log.Print("Could not parse json for this", err)
+		}
+		fmt.Print(string(str))
+
 	default:
 		return errors.New("Invalid request received")
 	}

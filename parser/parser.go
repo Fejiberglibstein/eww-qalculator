@@ -10,21 +10,38 @@ type Token struct {
 	Class Class  `json:"class"`
 }
 
+type Line []Token
+
 // Gets the tokens out from a qalc expression
-func ParseTokens(input string) {
+func parseTokens(input string) Line {
 	split := strings.Split(input, "\x1B")
 
 	tokens := make([]Token, 0)
 
 	for _, tok := range split {
-		class, offset, err := parseAnsiSeq(tok)
+		seq, offset, err := parseAnsiSeq(tok)
 		if err != nil {
-			log.Panic("Error parsing ansi seq: ", err)
+			// ignore any tokens that produce errors
+			continue
 		}
+		tok = tok[offset:]
+
 		tokens = append(tokens, Token{
-			Value: tok[offset:],
-			Class: class,
+			Value: tok,
+			Class: seq.getClass(),
 		})
 	}
 
+	return tokens
+}
+
+func ParseLines(lines []string) []Line {
+	res := make([]Line, 0)
+
+	for _, line := range lines {
+		log.Print(line)
+		res = append(res, parseTokens(line))
+	}
+
+	return res
 }
