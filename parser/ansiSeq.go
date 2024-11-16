@@ -9,8 +9,8 @@ import (
 )
 
 type ansiSeq struct {
-	color    ansiColor
 	graphics ansiGraphic
+	color    ansiColor
 }
 
 type ansiColor uint8
@@ -96,12 +96,17 @@ func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 			continue
 		case 'm':
 			// 'm' is the ending character in an ansi seq
+			if err := seq.addPart(num.String(), part); err != nil {
+				return ansiSeq{}, 0, err
+			}
 			seqLength = i + 1
 			break
 		case ';':
 			if err := seq.addPart(num.String(), part); err != nil {
 				return ansiSeq{}, 0, err
 			}
+			// Make a new string for num
+			num = strings.Builder{}
 			part += 1
 			continue
 		}
