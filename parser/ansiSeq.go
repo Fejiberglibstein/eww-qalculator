@@ -41,13 +41,13 @@ const (
 
 // All qalc ansi sequence class names
 const (
-	cNumber     Class = "Number"
-	cExpression Class = "Expression"
-	cVariable   Class = "Variable"
-	cUnit       Class = "Unit"
-	cError      Class = "Error"
-	cErrorMsg   Class = "ErrorMsg"
-	cBoolean    Class = "Boolean"
+	cNumber     Class = "number"
+	cExpression Class = "expression"
+	cVariable   Class = "variable"
+	cUnit       Class = "unit"
+	cError      Class = "error"
+	cErrorMsg   Class = "errorMsg"
+	cBoolean    Class = "boolean"
 )
 
 func (seq *ansiSeq) getClass() Class {
