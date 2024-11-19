@@ -1,6 +1,5 @@
-(defvar history "~/.local/state/qalc_hist")
-(deflisten result :initial `[]` `./scripts/qalc open`)
-(defvar set_equation "./scripts/qalc expr '{}'")
+(deflisten result :initial `[]` `go run . start`)
+(defvar set_equation "go run . send '{}'")
 
 (defwidget expression []
   (box
