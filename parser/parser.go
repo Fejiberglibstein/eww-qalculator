@@ -15,6 +15,7 @@ type Line []Token
 func parseTokens(input string) Line {
 
 	input = strings.TrimLeft(input, " \t")
+	input = strings.ReplaceAll(input, "\n", "")
 	// Give input a default ansi seq to begin with
 	input = "[0;0m" + input
 	split := strings.Split(input, "\x1B")
