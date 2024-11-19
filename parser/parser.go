@@ -13,6 +13,10 @@ type Line []Token
 
 // Gets the tokens out from a qalc expression
 func parseTokens(input string) Line {
+
+	input = strings.TrimLeft(input, " \t")
+	// Give input a default ansi seq to begin with
+	input = "[0;0m" + input
 	split := strings.Split(input, "\x1B")
 
 	tokens := make([]Token, 0)
