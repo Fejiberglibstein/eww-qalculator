@@ -31,6 +31,8 @@ type Qalc struct {
 }
 
 func NewServer(args []string) (Server, error) {
+	// Print just an empty array to give eww somehting to start with
+	fmt.Println("[]")
 	if err := os.Remove(Port); err != nil {
 		log.Print(err)
 	}
@@ -149,7 +151,7 @@ func (s *Server) onRequest(msg message.Message) error {
 		if err != nil {
 			log.Print("Could not parse json for this", err)
 		}
-		fmt.Print(string(str))
+		fmt.Println(string(str))
 
 	default:
 		return errors.New("Invalid request received")

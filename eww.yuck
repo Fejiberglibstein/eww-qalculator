@@ -1,5 +1,5 @@
-(deflisten result :initial `[]` `go run . start`)
-(defvar set_equation "go run . send '{}'")
+(deflisten result :initial `[]` `./eww-qalculator start`)
+(defvar set_equation "./eww-qalculator send expr '{}'")
 
 (defwidget expression []
   (box
