@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"strings"
 )
 
@@ -39,7 +38,6 @@ func ParseLines(lines []string) []Line {
 	res := make([]Line, 0)
 
 	for _, line := range lines {
-		log.Print(line)
 		res = append(res, parseTokens(line))
 	}
 

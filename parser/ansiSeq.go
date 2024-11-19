@@ -112,7 +112,6 @@ func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 		}
 		if unicode.IsDigit(char) {
 			num.WriteRune(char)
-			log.Print(num.String())
 		}
 	}
 	return seq, seqLength, nil
@@ -125,7 +124,6 @@ func (seq *ansiSeq) addPart(num string, part int) error {
 		log.Print(err)
 		return err
 	}
-	log.Print("HERE", num, digit)
 
 	if part == 0 {
 		seq.graphics = ansiGraphic(digit)
