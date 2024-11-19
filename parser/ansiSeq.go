@@ -2,11 +2,12 @@ package parser
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"unicode"
 )
+
+var lastColor ansiColor
 
 type ansiSeq struct {
 	graphics ansiGraphic
@@ -86,7 +87,6 @@ func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 			// ignore [
 			continue
 		case 'm':
-			log.Println(tok)
 			// 'm' is the ending character in an ansi seq
 			if err := seq.addPart(num.String(), part); err != nil {
 				return ansiSeq{}, 0, err
@@ -113,14 +113,17 @@ func (seq *ansiSeq) addPart(num string, part int) error {
 
 	digit, err := strconv.Atoi(num)
 	if err != nil {
-		log.Print(err)
 		return err
 	}
 
 	if part == 0 {
 		seq.graphics = ansiGraphic(digit)
+		if seq.graphics != reset {
+			seq.color = lastColor
+		}
 	} else {
 		seq.color = ansiColor(digit)
+		lastColor = seq.color
 	}
 
 	return nil
