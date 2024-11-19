@@ -49,27 +49,28 @@ const (
 	cError      Class = "error"
 	cErrorMsg   Class = "errorMsg"
 	cBoolean    Class = "boolean"
+	cUnknown    Class = "unknown"
 )
 
 func (seq *ansiSeq) getClass() Class {
-	var res Class
 	switch *seq {
 	case ansiSeq{graphics: reset, color: cyan}:
-		res = cNumber
+		return cNumber
 	case ansiSeq{graphics: reset, color: colorReset}:
-		res = cExpression
+		return cExpression
 	case ansiSeq{graphics: italic, color: yellow}:
-		res = cVariable
+		return cVariable
 	case ansiSeq{graphics: reset, color: green}:
-		res = cUnit
+		return cUnit
 	case ansiSeq{graphics: reset, color: red}:
-		res = cError
+		return cError
 	case ansiSeq{graphics: italic, color: colorReset}:
-		res = cErrorMsg
+		return cErrorMsg
 	case ansiSeq{graphics: reset, color: yellow}:
-		res = cBoolean
+		return cBoolean
+	default:
+		return cUnknown
 	}
-	return res
 }
 
 // parse an ansi sequence out from a string.
