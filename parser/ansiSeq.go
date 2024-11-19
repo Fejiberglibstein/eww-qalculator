@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"strings"
 	"unicode"
@@ -47,6 +48,7 @@ const (
 	cVariable   Class = "variable"
 	cUnit       Class = "unit"
 	cError      Class = "error"
+	cWarning    Class = "warning"
 	cErrorMsg   Class = "errorMsg"
 	cBoolean    Class = "boolean"
 	cUnknown    Class = "unknown"
@@ -64,6 +66,8 @@ func (seq *ansiSeq) getClass() Class {
 		return cUnit
 	case ansiSeq{graphics: reset, color: red}:
 		return cError
+	case ansiSeq{graphics: reset, color: blue}:
+		return cWarning
 	case ansiSeq{graphics: italic, color: colorReset}:
 		return cErrorMsg
 	case ansiSeq{graphics: reset, color: yellow}:
@@ -121,6 +125,8 @@ func (seq *ansiSeq) addPart(num string, part int) error {
 		seq.graphics = ansiGraphic(digit)
 		if seq.graphics != reset {
 			seq.color = lastColor
+		} else {
+			lastColor = colorReset
 		}
 	} else {
 		seq.color = ansiColor(digit)
