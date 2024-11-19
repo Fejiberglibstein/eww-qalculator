@@ -46,3 +46,24 @@ func TestAnsiSeq(t *testing.T) {
 	}
 
 }
+
+func TestAnsi2m(t *testing.T) {
+	inp := "[3mEmpty expression"
+	seq, offset, err := parseAnsiSeq(inp)
+	if err != nil {
+		t.Error("Got error ", err)
+	}
+
+	if offset != 3 {
+		t.Error("expected offset 3, got ", offset)
+	}
+
+	expected := ansiSeq{
+		graphics: 3,
+		color:    0,
+	}
+
+	if seq != expected {
+		t.Error("seq not expected, got", seq)
+	}
+}
