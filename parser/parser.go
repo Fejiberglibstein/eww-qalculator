@@ -30,13 +30,42 @@ func parseTokens(input string) Line {
 		}
 		tok = tok[offset:]
 
-		tokens = append(tokens, Token{
-			Value: tok,
-			Class: seq.getClass(),
-		})
+		split := splitEquals(tok)
+		for _, token := range split {
+			tokens = append(tokens, Token{
+				Value: token,
+				Class: seq.getClass(),
+			})
+		}
+
 	}
 
 	return tokens
+}
+
+// Split a token at either `=` or `≈` so that we can have the equals as its own
+// token
+//
+// # Example
+//
+// splitEquals("foo = bar ≈ 10") -> ["foo ", "=", " bar ", "≈", " 10"]
+// splitEquals("foobar") -> ["foobar"]
+func splitEquals(input string) []string {
+	res := make([]string, 0)
+	var acc strings.Builder
+
+	for _, rune := range input {
+		if rune == '≈' || rune == '=' {
+			res = append(res, acc.String())
+			res = append(res, string(rune))
+			acc = strings.Builder{}
+		} else {
+			acc.WriteRune(rune)
+		}
+	}
+
+	res = append(res, acc.String())
+	return res
 }
 
 func ParseLines(lines []string) []Line {
