@@ -76,18 +76,9 @@ func (seq *ansiSeq) getClass() Class {
 // Will return the class, offset of the string to skip over the ansi sequence,
 // or any error
 func parseAnsiSeq(tok string) (ansiSeq, int, error) {
-	// Skip the first token
-	for tok[0] != '[' {
-		if len(tok) > 1 {
-			tok = tok[1:]
-		} else {
-			return ansiSeq{}, 0, errors.New("Ansi seq not found in string segment")
-		}
-	}
 	part := 0
 	var num strings.Builder
 	var seq ansiSeq
-	var seqLength int
 
 	for i, char := range tok {
 		switch char {
@@ -95,12 +86,13 @@ func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 			// ignore [
 			continue
 		case 'm':
+			log.Println(tok)
 			// 'm' is the ending character in an ansi seq
 			if err := seq.addPart(num.String(), part); err != nil {
 				return ansiSeq{}, 0, err
 			}
-			seqLength = i + 1
-			break
+			seqLength := i + 1
+			return seq, seqLength, nil
 		case ';':
 			if err := seq.addPart(num.String(), part); err != nil {
 				return ansiSeq{}, 0, err
@@ -114,7 +106,7 @@ func parseAnsiSeq(tok string) (ansiSeq, int, error) {
 			num.WriteRune(char)
 		}
 	}
-	return seq, seqLength, nil
+	return ansiSeq{}, 0, errors.New("Could not find end of ansi seq")
 }
 
 func (seq *ansiSeq) addPart(num string, part int) error {
