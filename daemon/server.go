@@ -157,7 +157,7 @@ func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {
 		lines := parser.ParseLines(qalcStrings)
 		sendData(s.exprChannel, lines)
 
-		results := parser.GetResults(lines)
+		_, results := parser.EvaluateEquation(lines)
 		sendData(s.resultChannel, results)
 
 	case uint8(message.Listen):

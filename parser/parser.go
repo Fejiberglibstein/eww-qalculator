@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"log"
 	"strings"
 )
 
@@ -23,6 +24,7 @@ func ParseLines(lines []string) []Line {
 
 // Gets the tokens out from a qalc expression
 func parseTokens(input string) Line {
+	log.Println(input)
 
 	input = strings.TrimLeft(input, " \t")
 	input = strings.ReplaceAll(input, "\n", "")
@@ -42,10 +44,12 @@ func parseTokens(input string) Line {
 
 		split := splitEquals(tok)
 		for _, token := range split {
-			tokens = append(tokens, Token{
-				Value: token,
-				Class: seq.getClass(),
-			})
+			if token != "" {
+				tokens = append(tokens, Token{
+					Value: token,
+					Class: seq.getClass(),
+				})
+			}
 		}
 
 	}
@@ -86,13 +90,17 @@ func splitEquals(input string) []string {
 //	   Actual: 22/3
 //	}
 type Result struct {
-	// The actual result, always included.
+	// The actual result, used when the equation result has a = in it.
+	//
+	// If there is no actual result, then this will be empty
 	Actual []Token
-	// The approximate result, used when the expression has a ≈ in it.
+	// The approximate result, used when the equation result has a ≈ in it.
 	//
 	// If there is no approximate result, then this will be empty
 	Approximate []Token
 }
+
+type Expression []Token
 
 func resultAcc(addTo string, result *Result, acc []Token) {
 	if addTo == "approximate" {
@@ -103,8 +111,9 @@ func resultAcc(addTo string, result *Result, acc []Token) {
 	}
 }
 
-func GetResults(lines []Line) []Result {
+func EvaluateEquation(lines []Line) (Expression, []Result) {
 	results := make([]Result, 0)
+	var expression Expression
 	for _, tokens := range lines {
 
 		var result Result
@@ -115,8 +124,13 @@ func GetResults(lines []Line) []Result {
 			switch token.Value {
 			case "=":
 				resultAcc(addTo, &result, acc)
+				addTo = ""
 				if len(result.Actual) == 0 {
 					addTo = "actual"
+				}
+
+				if expression != nil {
+					expression = acc
 				}
 				acc = make([]Token, 0)
 			case "≈":
@@ -131,5 +145,5 @@ func GetResults(lines []Line) []Result {
 		results = append(results, result)
 	}
 
-	return results
+	return expression, results
 }

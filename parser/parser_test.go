@@ -110,7 +110,7 @@ func compareResult(r1, r2 Result) bool {
 }
 
 func TestParseEqual(t *testing.T) {
-	results := GetResults([]Line{
+	_, results := EvaluateEquation([]Line{
 		[]Token{
 			newToken("(10 - 3) "),
 			newToken("="),
