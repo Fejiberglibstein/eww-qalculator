@@ -4,8 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/Fejiberglibstein/eww-qalculator/send"
 	"github.com/Fejiberglibstein/eww-qalculator/daemon"
+	"github.com/Fejiberglibstein/eww-qalculator/listen"
+	"github.com/Fejiberglibstein/eww-qalculator/send"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	case "send":
 		send.Send(args[2:])
 	case "listen":
-		// TODO
+		listen.Listen(args[2:])
 	default:
 		log.Print("Invalid arguments")
 	}

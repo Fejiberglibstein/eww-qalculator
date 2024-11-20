@@ -20,7 +20,9 @@ type listener struct {
 	conn    net.Conn
 }
 
-func Listen(channel Channel) {
+func Listen(args []string) {
+	channel := Channel(args[0])
+
 	conn, err := net.Dial("unix", message.Port)
 	if err != nil {
 		log.Panic(err)
@@ -37,7 +39,9 @@ func Listen(channel Channel) {
 	for {
 		msg, err := message.ReadMessage(&conn)
 		if err != nil {
-			log.Print(err)
+			if err.Error() == "EOF" {
+				break
+			}
 			continue
 		}
 		fmt.Print(msg.Data)

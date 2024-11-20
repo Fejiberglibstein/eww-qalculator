@@ -147,10 +147,10 @@ func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {
 		}
 
 		lines := parser.ParseLines(qalcStrings)
-		sendData(&s.exprChannel, lines)
+		sendData(s.exprChannel, lines)
 
 		results := parser.GetResults(lines)
-		sendData(&s.resultChannel, results)
+		sendData(s.resultChannel, results)
 
 	case uint8(message.Listen):
 		switch listen.Channel(msg.Data) {
@@ -166,7 +166,11 @@ func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {
 	return nil
 }
 
-func sendData(conn *net.Conn, data any) error {
+func sendData(conn net.Conn, data any) error {
+	if conn == nil {
+		return nil
+	}
+
 	str, err := json.Marshal(&data)
 	if err != nil {
 		return err
@@ -175,7 +179,7 @@ func sendData(conn *net.Conn, data any) error {
 	// No header is necessary, listener does NOT care
 	msg := message.Message{Data: string(str)}
 
-	if err = message.SendMessage(conn, msg); err != nil {
+	if err = message.SendMessage(&conn, msg); err != nil {
 		return err
 	}
 
