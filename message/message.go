@@ -6,6 +6,9 @@ import (
 	"net"
 )
 
+// TODO: maybe put port in a better spot?
+
+// The port that the server runs on
 const Port = "/tmp/eww-calc"
 
 type Request uint8

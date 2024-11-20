@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/Fejiberglibstein/eww-qalculator/message"
-	"github.com/Fejiberglibstein/eww-qalculator/server"
 )
 
 type Channel string
@@ -22,7 +21,7 @@ type listener struct {
 }
 
 func Listen(channel Channel) {
-	conn, err := net.Dial("unix", server.Port)
+	conn, err := net.Dial("unix", message.Port)
 	if err != nil {
 		log.Panic(err)
 	}

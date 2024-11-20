@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/Fejiberglibstein/eww-qalculator/message"
-	"github.com/Fejiberglibstein/eww-qalculator/server"
 )
 
 func Send(args []string) {
@@ -14,7 +13,7 @@ func Send(args []string) {
 		log.Panic("Not enough args for send request")
 	}
 
-	conn, err := net.Dial("unix", server.Port)
+	conn, err := net.Dial("unix", message.Port)
 	if err != nil {
 		log.Panic(err)
 	}
