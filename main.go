@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/Fejiberglibstein/eww-qalculator/send"
-	"github.com/Fejiberglibstein/eww-qalculator/server"
+	"github.com/Fejiberglibstein/eww-qalculator/daemon"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 
 	switch args[1] {
 	case "start":
-		server, err := server.NewServer(args[2:])
+		server, err := daemon.NewServer(args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
