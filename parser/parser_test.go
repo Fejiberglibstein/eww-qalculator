@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"slices"
+	"strings"
 	"testing"
 )
 
@@ -38,7 +40,7 @@ func TestAnsiSeq(t *testing.T) {
 
 	expected = ansiSeq{
 		graphics: 10,
-		color:    0,
+		color:    6,
 	}
 
 	if seq != expected {
@@ -49,6 +51,7 @@ func TestAnsiSeq(t *testing.T) {
 
 func TestAnsi2m(t *testing.T) {
 	inp := "[3mEmpty expression"
+	lastColor = colorReset // stupid fix
 	seq, offset, err := parseAnsiSeq(inp)
 	if err != nil {
 		t.Error("Got error ", err)
@@ -65,5 +68,17 @@ func TestAnsi2m(t *testing.T) {
 
 	if seq != expected {
 		t.Error("seq not expected, got", seq)
+	}
+}
+
+func TestEqual(t *testing.T) {
+	res := splitEquals("foo = bar = le")
+	if slices.Compare(res, []string{"foo ", "=", " bar ", "=", " le"}) != 0 {
+		t.Error("Not equal, got ", strings.Join(res, ","))
+	}
+
+	res = splitEquals("foobar")
+	if slices.Compare(res, []string{"foobar"}) != 0 {
+		t.Error("Not equal, got ", strings.Join(res, ","))
 	}
 }

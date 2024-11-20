@@ -2,7 +2,6 @@ package parser
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"unicode"
