@@ -35,7 +35,7 @@ type Qalc struct {
 
 func NewServer(args []string) (Server, error) {
 	// Print just an empty array to give eww somehting to start with
-	fmt.Println("[]")
+	fmt.Println("1")
 	if err := os.Remove(message.Port); err != nil {
 		log.Print(err)
 	}

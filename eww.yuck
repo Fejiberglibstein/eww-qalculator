@@ -50,21 +50,22 @@
 
     :spacing 10
     :space-evenly false
-    ; Stupid fix to get eww to recognize that we're using the daemon
     (box 
       :spacing 8
       :space-evenly false
 
       :class "calc_input"
       :halign "center"
-      (box :class "${_}")
       (label :class "icon" :text "")
       (input
         :active true
         :width 500
         :onaccept "${EWW_CMD} close calc"
         :onchange set_equation))
-    (result)
+
+    ; Stupid fix to get eww to recognize that we're using the daemon
+    (box :class "${_}")
+    (literal :content {_ == 1 ? "(box (result))" : ""})
     ))
 
 (defwindow calc
