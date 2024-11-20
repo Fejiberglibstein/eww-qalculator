@@ -1,9 +1,6 @@
 package parser
 
-import (
-	"log"
-	"strings"
-)
+import "strings"
 
 type Token struct {
 	Value string `json:"value"`
@@ -11,6 +8,28 @@ type Token struct {
 }
 
 type Line []Token
+
+// Represents the result of a qalc calculation:
+//
+// 10/3 + 4 = 22/3 ≈ 7.33333 ->
+//
+//	Result {
+//	   Approximate: 7.33333
+//	   Actual: 22/3
+//	}
+type Result struct {
+	// The actual result, used when the equation result has a = in it.
+	//
+	// If there is no actual result, then this will be empty
+	Actual []Token `json:"actual"`
+	// The approximate result, used when the equation result has a ≈ in it.
+	//
+	// If there is no approximate result, then this will be empty
+	Approximate []Token  `json:"approximate"`
+}
+
+type Expression []Token
+
 
 func ParseLines(lines []string) []Line {
 	res := make([]Line, 0)
@@ -24,8 +43,6 @@ func ParseLines(lines []string) []Line {
 
 // Gets the tokens out from a qalc expression
 func parseTokens(input string) Line {
-	log.Println(input)
-
 	input = strings.TrimLeft(input, " \t")
 	input = strings.ReplaceAll(input, "\n", "")
 	// Give input a default ansi seq to begin with
@@ -80,27 +97,6 @@ func splitEquals(input string) []string {
 	res = append(res, acc.String())
 	return res
 }
-
-// Represents the result of a qalc calculation:
-//
-// 10/3 + 4 = 22/3 ≈ 7.33333 ->
-//
-//	Result {
-//	   Approximate: 7.33333
-//	   Actual: 22/3
-//	}
-type Result struct {
-	// The actual result, used when the equation result has a = in it.
-	//
-	// If there is no actual result, then this will be empty
-	Actual []Token
-	// The approximate result, used when the equation result has a ≈ in it.
-	//
-	// If there is no approximate result, then this will be empty
-	Approximate []Token
-}
-
-type Expression []Token
 
 func resultAcc(addTo string, result *Result, acc []Token) {
 	if addTo == "approximate" {
