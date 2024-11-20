@@ -1,26 +1,45 @@
-; this is only used to start the qalculator daemon
+; this is only used to start the qalculator daemon, it doesn't actually listen
+; for anything
 (deflisten _ :initial `[]` `./eww-qalculator start`)
-(deflisten result :initial `[]` `./eww-qalculator listen expr`)
+
+(deflisten expr :initial `[]` `./eww-qalculator listen expr`)
+(deflisten results :initial `[]` `./eww-qalculator listen result`)
 (defvar set_equation "./eww-qalculator send expr '{}'")
+
+
+(defwidget tokens [tokens]
+  (box
+    :orientation "horizontal"
+    :halign "center"
+    :hexpand false
+    :space-evenly false
+    (for token in tokens
+       (label 
+         :hexpand true
+         :truncate false
+         :unindent false
+         :class "math ${token.class}"
+         :text {token.value}))))
 
 (defwidget expression []
   (box
     :orientation "vertical"
     :valign "start"
     :vexpand true
-    (for line in result
+    (for line in expr
+         (tokens :tokens line))))
+
+(defwidget result []
+  (box
+    :orientation "horizontal"
+    :halign "center"
+    :hexpand false
+    :space-evenly false
+    (for res in results
          (box
-           :orientation "horizontal"
-           :halign "center"
-           :hexpand false
-           :space-evenly false
-           (for token in line
-                (label 
-                  :hexpand true
-                  :truncate false
-                  :unindent false
-                  :class "math ${token.class}"
-                  :text {token.value}))))))
+           (tokens :tokens {res.actual})
+           (literal :content {res.approximate != [] ? "(box (label :text \"≈\") (tokens :tokens {res.approximate}))" : ""})
+           ))))
 
 (defwidget calc_box []
   (box
@@ -32,20 +51,21 @@
     :spacing 10
     :space-evenly false
     ; Stupid fix to get eww to recognize that we're using the daemon
-    (box :class _)
     (box 
       :spacing 8
       :space-evenly false
 
       :class "calc_input"
       :halign "center"
+      (box :class "${_}")
       (label :class "icon" :text "")
       (input
         :active true
         :width 500
         :onaccept "${EWW_CMD} close calc"
         :onchange set_equation))
-    (expression)))
+    (result)
+    ))
 
 (defwindow calc
   :monitor 0
