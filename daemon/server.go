@@ -10,6 +10,8 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 
 	"github.com/Fejiberglibstein/eww-qalculator/listen"
 	"github.com/Fejiberglibstein/eww-qalculator/message"
@@ -92,25 +94,31 @@ func (s *Server) Run() {
 }
 
 func (s *Server) listen() {
-	for {
-		conn, err := s.listener.Accept()
-		if err != nil {
-			log.Print("Failed to accept request: ", err)
-			continue
-		}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-		// Parse the data
-		message, err := message.ReadMessage(&conn)
-		if err != nil {
-			log.Print(err)
-			continue
-		}
+	go func() {
+		for {
+			conn, err := s.listener.Accept()
+			if err != nil {
+				log.Print("Failed to accept request: ", err)
+				c <- nil
+			}
 
-		if err = s.onRequest(message, &conn); err != nil {
-			log.Print(err)
-		}
+			// Parse the data
+			message, err := message.ReadMessage(&conn)
+			if err != nil {
+				log.Print(err)
+				continue
+			}
 
-	}
+			if err = s.onRequest(message, &conn); err != nil {
+				log.Print(err)
+			}
+
+		}
+	}()
+	<-c
 }
 
 func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {

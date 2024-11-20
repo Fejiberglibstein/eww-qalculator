@@ -2,8 +2,12 @@ package listen
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Fejiberglibstein/eww-qalculator/message"
 )
@@ -36,16 +40,24 @@ func Listen(args []string) {
 
 	l.sendListenReq(channel)
 
-	for {
-		msg, err := message.ReadMessage(&conn)
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		for {
+			msg, err := message.ReadMessage(&conn)
+			if err != nil {
+				if err == io.EOF {
+					c <- nil
+				}
+				continue
 			}
-			continue
+			fmt.Println(msg.Data)
 		}
-		fmt.Print(msg.Data)
-	}
+	}()
+	<-c
+
+	log.Print(conn.Close())
 }
 
 func (l *listener) sendListenReq(channel Channel) {
