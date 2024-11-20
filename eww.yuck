@@ -1,4 +1,6 @@
-(deflisten result :initial `[]` `./eww-qalculator start`)
+; this is only used to start the qalculator daemon
+(deflisten _ :initial `[]` `./eww-qalculator start`)
+(deflisten result :initial `[]` `./eww-qalculator listen expr`)
 (defvar set_equation "./eww-qalculator send expr '{}'")
 
 (defwidget expression []
@@ -42,7 +44,6 @@
        :width 500
        :onaccept "${EWW_CMD} close calc"
        :onchange set_equation))
-
 
     (expression)))
 
