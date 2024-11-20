@@ -11,15 +11,17 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/Fejiberglibstein/eww-qalculator/listen"
 	"github.com/Fejiberglibstein/eww-qalculator/message"
 	"github.com/Fejiberglibstein/eww-qalculator/parser"
 )
 
-const Port = "/tmp/eww-calc"
-
 type Server struct {
 	listener net.Listener
 	qalc     Qalc
+
+	resultChannel net.Conn
+	exprChannel   net.Conn
 }
 
 type Qalc struct {
@@ -104,14 +106,14 @@ func (s *Server) listen() {
 			continue
 		}
 
-		if err = s.onRequest(message); err != nil {
+		if err = s.onRequest(message, &conn); err != nil {
 			log.Print(err)
 		}
 
 	}
 }
 
-func (s *Server) onRequest(msg message.Message) error {
+func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {
 	switch msg.Header {
 	case uint8(message.SendExpr):
 		io.WriteString(s.qalc.stdin, string(msg.Data)+"\n")
@@ -145,14 +147,37 @@ func (s *Server) onRequest(msg message.Message) error {
 		}
 
 		lines := parser.ParseLines(qalcStrings)
-		str, err := json.Marshal(&lines)
-		if err != nil {
-			log.Print("Could not parse json for this", err)
+		sendData(&s.exprChannel, lines)
+
+		results := parser.GetResults(lines)
+		sendData(&s.resultChannel, results)
+
+	case uint8(message.Listen):
+		switch listen.Channel(msg.Data) {
+		case listen.ResultChan:
+			s.resultChannel = *conn
+		case listen.ExprChan:
+			s.exprChannel = *conn
 		}
-		fmt.Println(string(str))
 
 	default:
 		return errors.New("Invalid request received")
 	}
+	return nil
+}
+
+func sendData(conn *net.Conn, data any) error {
+	str, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+
+	// No header is necessary, listener does NOT care
+	msg := message.Message{Data: string(str)}
+
+	if err = message.SendMessage(conn, msg); err != nil {
+		return err
+	}
+
 	return nil
 }

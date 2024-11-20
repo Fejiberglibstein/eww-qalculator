@@ -103,7 +103,7 @@ func resultAcc(addTo string, result *Result, acc []Token) {
 	}
 }
 
-func ParseResult(lines []Line) []Result {
+func GetResults(lines []Line) []Result {
 	results := make([]Result, 0)
 	for _, tokens := range lines {
 

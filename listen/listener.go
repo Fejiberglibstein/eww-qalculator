@@ -40,8 +40,7 @@ func Listen(channel Channel) {
 			log.Print(err)
 			continue
 		}
-
-		fmt.Print(msg)
+		fmt.Print(msg.Data)
 	}
 }
 
