@@ -1,8 +1,6 @@
 package send
 
 import (
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"log"
 	"net"
@@ -22,22 +20,13 @@ func Send(args []string) {
 	}
 	defer conn.Close()
 
-	// Get the message to send based on args
-	message, err := getMessage(args)
+	// Get the msg to send based on args
+	msg, err := getMessage(args)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	// Allocate a new byte buffer to fill with the bytes of our message
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	if err = enc.Encode(message); err != nil {
-		log.Panic(err)
-	}
-
-	// Write the buffer to the stream
-	_, err = conn.Write(buf.Bytes())
-	if err != nil {
+	if err = message.SendMessage(&conn, msg); err != nil {
 		log.Panic(err)
 	}
 
