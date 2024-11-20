@@ -12,7 +12,6 @@
          (box
            :orientation "horizontal"
            :halign "center"
-           :gap 0
            :hexpand false
            :space-evenly false
            (for token in line
@@ -32,6 +31,8 @@
 
     :spacing 10
     :space-evenly false
+    ; Stupid fix to get eww to recognize that we're using the daemon
+    (box :class _)
     (box 
       :spacing 8
       :space-evenly false
@@ -40,11 +41,10 @@
       :halign "center"
       (label :class "icon" :text "")
       (input
-       :active true
-       :width 500
-       :onaccept "${EWW_CMD} close calc"
-       :onchange set_equation))
-
+        :active true
+        :width 500
+        :onaccept "${EWW_CMD} close calc"
+        :onchange set_equation))
     (expression)))
 
 (defwindow calc
