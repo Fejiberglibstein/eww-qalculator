@@ -2,7 +2,6 @@ package server
 
 import (
 	"bufio"
-	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -99,17 +98,16 @@ func (s *Server) listen() {
 		}
 
 		// Parse the data
-		dec := gob.NewDecoder(conn)
-		var message message.Message
-		dec.Decode(&message)
+		message, err := message.ReadMessage(&conn)
+		if err != nil {
+			log.Print(err)
+			continue
+		}
 
 		if err = s.onRequest(message); err != nil {
 			log.Print(err)
 		}
 
-		if err = conn.Close(); err != nil {
-			log.Print(err)
-		}
 	}
 }
 
