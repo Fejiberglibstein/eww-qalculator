@@ -71,7 +71,7 @@ func TestAnsi2m(t *testing.T) {
 	}
 }
 
-func TestEqual(t *testing.T) {
+func TestSplitEquals(t *testing.T) {
 	res := splitEquals("foo = bar = le")
 	if slices.Compare(res, []string{"foo ", "=", " bar ", "=", " le"}) != 0 {
 		t.Error("Not equal, got ", strings.Join(res, ","))
@@ -80,5 +80,59 @@ func TestEqual(t *testing.T) {
 	res = splitEquals("foobar")
 	if slices.Compare(res, []string{"foobar"}) != 0 {
 		t.Error("Not equal, got ", strings.Join(res, ","))
+	}
+}
+
+func newToken(value string) Token {
+	return Token{
+		Class: "expression",
+		Value: value,
+	}
+}
+
+func compareResult(r1, r2 Result) bool {
+	if len(r1.Actual) != len(r2.Actual) || len(r1.Approximate) != len(r2.Approximate) {
+		return false
+	}
+
+	for i, _ := range r1.Actual {
+		if r1.Actual[i] != r2.Actual[i] {
+			return false
+		}
+	}
+
+	for i, _ := range r1.Approximate {
+		if r1.Approximate[i] != r2.Approximate[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestParseEqual(t *testing.T) {
+	results := ParseResult([]Line{
+		[]Token{
+			newToken("(10 - 3) "),
+			newToken("="),
+
+			newToken(" 7 "),
+			newToken("347"),
+
+			newToken("≈"),
+
+			newToken("res2"),
+		},
+	})
+
+	if !(len(results) != 0 && compareResult(results[0], Result{
+		Actual: []Token{
+			newToken(" 7 "),
+			newToken("347"),
+		},
+		Approximate: []Token{
+			newToken("res2"),
+		},
+	})) {
+		t.Error("Not equal, got ", results[0])
 	}
 }
