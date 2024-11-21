@@ -1,9 +1,5 @@
-; this is only used to start the qalculator daemon, it doesn't actually listen
-; for anything
-(deflisten _ :initial `[]` `./eww-qalculator start`)
-
-(deflisten expr :initial `[]` `./eww-qalculator listen expr`)
 (deflisten results :initial `[]` `./eww-qalculator listen result`)
+(deflisten expr :initial `[]` `./eww-qalculator listen expr`)
 (defvar set_equation "./eww-qalculator send expr '{}'")
 
 
@@ -14,12 +10,12 @@
     :hexpand false
     :space-evenly false
     (for token in tokens
-       (label 
-         :hexpand true
-         :truncate false
-         :unindent false
-         :class "math ${token.class}"
-         :text {token.value}))))
+         (label 
+           :hexpand true
+           :truncate false
+           :unindent false
+           :class "math ${token.class}"
+           :text {token.value}))))
 
 (defwidget expression []
   (box
@@ -35,11 +31,12 @@
     :halign "center"
     :hexpand false
     :space-evenly false
+    ; (label :text "${res.approximate}")
     (for res in results
-         (box
-           (tokens :tokens {res.actual})
-           (literal :content {res.approximate != [] ? "(box (label :text \"≈\") (tokens :tokens {res.approximate}))" : ""})
-           ))))
+      (box
+        (tokens :tokens {res.actual})
+        (literal :content {arraylength(res.approximate) != 0 ? "(box (label :text \"≈\") (tokens :tokens {res.approximate}))" : ""})))))
+           
 
 (defwidget calc_box []
   (box
@@ -64,9 +61,8 @@
         :onchange set_equation))
 
     ; Stupid fix to get eww to recognize that we're using the daemon
-    (box :class "${_}")
-    (literal :content {_ == 1 ? "(box (result))" : ""})
-    ))
+    (result)))
+    
 
 (defwindow calc
   :monitor 0
