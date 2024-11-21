@@ -27,16 +27,18 @@
 
 (defwidget result []
   (box
-    :orientation "horizontal"
-    :halign "center"
-    :hexpand false
-    :space-evenly false
-    ; (label :text "${res.approximate}")
+    :orientation "vertical"
+    :valign "start"
+    :vexpand true
     (for res in results
-      (box
-        (tokens :tokens {res.actual})
-        (literal :content {arraylength(res.approximate) != 0 ? "(box (label :text \"≈\") (tokens :tokens {res.approximate}))" : ""})))))
-           
+         (box
+           :orientation "horizontal"
+           :halign "center"
+           :hexpand false
+           :space-evenly false
+           (tokens :tokens {res.actual})
+           (literal :content {arraylength(res.approximate) != 0 ? "(label :text \"≈\")" : ""})
+           (literal :content {arraylength(res.approximate) != 0 ? "(tokens :tokens {res.approximate})" : ""})))))
 
 (defwidget calc_box []
   (box
@@ -62,7 +64,7 @@
 
     ; Stupid fix to get eww to recognize that we're using the daemon
     (result)))
-    
+
 
 (defwindow calc
   :monitor 0
