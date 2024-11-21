@@ -25,11 +25,10 @@ type Result struct {
 	// The approximate result, used when the equation result has a ≈ in it.
 	//
 	// If there is no approximate result, then this will be empty
-	Approximate []Token  `json:"approximate"`
+	Approximate []Token `json:"approximate"`
 }
 
 type Expression []Token
-
 
 func ParseLines(lines []string) []Line {
 	res := make([]Line, 0)
@@ -112,7 +111,10 @@ func EvaluateEquation(lines []Line) (Expression, []Result) {
 	var expression Expression
 	for _, tokens := range lines {
 
-		var result Result
+		result := Result{
+			Actual:      []Token{},
+			Approximate: []Token{},
+		}
 		addTo := ""
 		acc := make([]Token, 0)
 
