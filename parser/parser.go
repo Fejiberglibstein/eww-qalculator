@@ -9,6 +9,12 @@ type Token struct {
 
 type Line []Token
 
+type Equation struct {
+	Results []Result `json:"results"`
+	Warning string  `json:"warning"`
+	Expression []Token
+}
+
 // Represents the result of a qalc calculation:
 //
 // 10/3 + 4 = 22/3 ≈ 7.33333 ->
@@ -27,8 +33,6 @@ type Result struct {
 	// If there is no approximate result, then this will be empty
 	Approximate []Token `json:"approximate"`
 }
-
-type Expression []Token
 
 func ParseLines(lines []string) []Line {
 	res := make([]Line, 0)
@@ -106,9 +110,9 @@ func resultAcc(addTo string, result *Result, acc []Token) {
 	}
 }
 
-func EvaluateEquation(lines []Line) (Expression, []Result) {
+func EvaluateEquation(lines []Line) Equation {
 	results := make([]Result, 0)
-	var expression Expression
+	var equation Equation
 	for _, tokens := range lines {
 
 		result := Result{

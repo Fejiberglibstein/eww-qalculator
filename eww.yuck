@@ -30,15 +30,20 @@
     :orientation "vertical"
     :valign "start"
     :vexpand true
-    (for res in results
-         (box
-           :orientation "horizontal"
-           :halign "center"
-           :hexpand false
-           :space-evenly false
-           (tokens :tokens {res.actual})
-           (literal :content {arraylength(res.approximate) != 0 ? "(label :text \"≈\")" : ""})
-           (literal :content {arraylength(res.approximate) != 0 ? "(tokens :tokens {res.approximate})" : ""})))))
+    {results.warning != "" ? _res : _warning}))
+    
+(defwidget _res []
+  (for res in results.results
+       (box
+         :orientation "horizontal"
+         :halign "center"
+         :hexpand false
+         :space-evenly false
+         (literal :content {arraylength(res.approximate) != 0 ? "(label :class \"math expression\" :text \"≈\")" : ""})
+         (literal :content {arraylength(res.approximate) != 0 ? "(tokens :tokens {res.approximate})" : ""}))))
+
+(defwidget _warning []
+  (label :text results.warning))
 
 (defwidget calc_box []
   (box
@@ -62,7 +67,6 @@
         :onaccept "${EWW_CMD} close calc"
         :onchange set_equation))
 
-    ; Stupid fix to get eww to recognize that we're using the daemon
     (result)))
 
 
