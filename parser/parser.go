@@ -10,8 +10,8 @@ type Token struct {
 type Line []Token
 
 type Equation struct {
-	Results []Result `json:"results"`
-	Warning string  `json:"warning"`
+	Results    []Result `json:"results"`
+	Warning    string   `json:"warning"`
 	Expression []Token
 }
 
@@ -111,8 +111,11 @@ func resultAcc(addTo string, result *Result, acc []Token) {
 }
 
 func EvaluateEquation(lines []Line) Equation {
-	results := make([]Result, 0)
-	var equation Equation
+	equation := Equation{
+		Results:    make([]Result, 0),
+		Warning:    "",
+		Expression: make([]Token, 0),
+	}
 	for _, tokens := range lines {
 
 		result := Result{
@@ -131,8 +134,8 @@ func EvaluateEquation(lines []Line) Equation {
 					addTo = "actual"
 				}
 
-				if expression != nil {
-					expression = acc
+				if equation.Expression != nil {
+					equation.Expression = acc
 				}
 				acc = make([]Token, 0)
 			case "≈":
@@ -144,8 +147,8 @@ func EvaluateEquation(lines []Line) Equation {
 			}
 		}
 		resultAcc(addTo, &result, acc)
-		results = append(results, result)
+		equation.Results = append(equation.Results, result)
 	}
 
-	return expression, results
+	return equation
 }

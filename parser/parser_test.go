@@ -95,13 +95,13 @@ func compareResult(r1, r2 Result) bool {
 		return false
 	}
 
-	for i, _ := range r1.Actual {
+	for i := range r1.Actual {
 		if r1.Actual[i] != r2.Actual[i] {
 			return false
 		}
 	}
 
-	for i, _ := range r1.Approximate {
+	for i := range r1.Approximate {
 		if r1.Approximate[i] != r2.Approximate[i] {
 			return false
 		}
@@ -110,7 +110,7 @@ func compareResult(r1, r2 Result) bool {
 }
 
 func TestParseEqual(t *testing.T) {
-	_, results := EvaluateEquation([]Line{
+	equation := EvaluateEquation([]Line{
 		[]Token{
 			newToken("(10 - 3) "),
 			newToken("="),
@@ -124,7 +124,7 @@ func TestParseEqual(t *testing.T) {
 		},
 	})
 
-	if !(len(results) != 0 && compareResult(results[0], Result{
+	if !(len(equation.Results) != 0 && compareResult(equation.Results[0], Result{
 		Actual: []Token{
 			newToken(" 7 "),
 			newToken("347"),
@@ -133,6 +133,6 @@ func TestParseEqual(t *testing.T) {
 			newToken("res2"),
 		},
 	})) {
-		t.Error("Not equal, got ", results[0])
+		t.Error("Not equal, got ", equation.Results[0])
 	}
 }
