@@ -158,7 +158,7 @@ func (s *Server) onRequest(msg message.Message, conn *net.Conn) error {
 		sendData(s.exprChannel, lines)
 
 		equation := parser.EvaluateEquation(lines)
-		sendData(s.resultChannel, equation.Results)
+		sendData(s.resultChannel, equation)
 
 	case uint8(message.Listen):
 		switch listen.Channel(msg.Data) {

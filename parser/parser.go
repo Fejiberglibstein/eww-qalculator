@@ -1,6 +1,8 @@
 package parser
 
-import "strings"
+import (
+	"strings"
+)
 
 type Token struct {
 	Value string `json:"value"`
@@ -11,8 +13,8 @@ type Line []Token
 
 type Equation struct {
 	Results    []Result `json:"results"`
-	Warning    string   `json:"warning"`
-	Expression []Token
+	Warning    []Token  `json:"warning"`
+	Expression []Token  `json:""`
 }
 
 // Represents the result of a qalc calculation:
@@ -113,20 +115,30 @@ func resultAcc(addTo string, result *Result, acc []Token) {
 func EvaluateEquation(lines []Line) Equation {
 	equation := Equation{
 		Results:    make([]Result, 0),
-		Warning:    "",
+		Warning:    make([]Token, 0),
 		Expression: make([]Token, 0),
 	}
 	for _, tokens := range lines {
-
 		result := Result{
 			Actual:      []Token{},
 			Approximate: []Token{},
 		}
 		addTo := ""
 		acc := make([]Token, 0)
+		var addWarning bool
 
 		for _, token := range tokens {
+			if addWarning {
+				equation.Warning = append(equation.Warning, token)
+				continue
+			}
+
 			switch token.Value {
+			case "warning: ":
+				// Reset these because we have a warning
+				equation.Results = make([]Result, 0)
+				equation.Expression = make([]Token, 0)
+				addWarning = true
 			case "=":
 				resultAcc(addTo, &result, acc)
 				addTo = ""
@@ -146,8 +158,12 @@ func EvaluateEquation(lines []Line) Equation {
 				acc = append(acc, token)
 			}
 		}
-		resultAcc(addTo, &result, acc)
-		equation.Results = append(equation.Results, result)
+		if !addWarning {
+			resultAcc(addTo, &result, acc)
+			equation.Results = append(equation.Results, result)
+		} else {
+			break
+		}
 	}
 
 	return equation
