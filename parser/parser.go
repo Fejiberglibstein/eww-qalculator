@@ -134,7 +134,7 @@ func EvaluateEquation(lines []Line) Equation {
 			}
 
 			switch token.Value {
-			case "warning: ":
+			case "warning: ", "error: ":
 				// Reset these because we have a warning
 				equation.Results = make([]Result, 0)
 				equation.Expression = make([]Token, 0)

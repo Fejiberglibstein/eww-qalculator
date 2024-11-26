@@ -30,20 +30,22 @@
     :orientation "vertical"
     :valign "start"
     :vexpand true
-    {results.warning != "" ? _res : _warning}))
+    (literal :content {arraylength(results.warning) != 0 ? "(_res)" : "(_warning)"})))
     
 (defwidget _res []
-  (for res in results.results
-       (box
-         :orientation "horizontal"
-         :halign "center"
-         :hexpand false
-         :space-evenly false
-         (literal :content {arraylength(res.approximate) != 0 ? "(label :class \"math expression\" :text \"≈\")" : ""})
-         (literal :content {arraylength(res.approximate) != 0 ? "(tokens :tokens {res.approximate})" : ""}))))
+  (box
+    (label :text results)
+    (for res in {results.results}
+         (box
+           :orientation "horizontal"
+           :halign "center"
+           :hexpand false
+           :space-evenly false
+           (literal :content {arraylength(res.approximate) != 0 ? "(label :class \"math expression\" :text \"≈\")" : ""})
+           (literal :content {arraylength(res.approximate) != 0 ? "(tokens :tokens {res.approximate})" : ""})))))
 
 (defwidget _warning []
-  (label :text results.warning))
+  (tokens :tokens {results.warning}))
 
 (defwidget calc_box []
   (box
